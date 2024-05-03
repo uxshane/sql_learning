@@ -1,0 +1,108 @@
+----- sequence -----
+시퀀스 : 연속적인 번호를 만들어 주는 기능
+
+형식)
+create sequence [시퀀스명]
+start with [n] -- 시작값(기본값1)
+increment by [n] -- 증가값(기본값1)
+maxvalue [n] -- 시퀀스 최대값(기본값 9999자)
+minvalue [n] -- 시퀀스의 최소값(기본값 1)
+cache / nocache -- 캐시메모리 사용 여부
+
+--간략화 시퀀스 생성
+create sequence [시퀀스명];
+
+-- 시퀀스 테스트 테이블
+create table goods(
+	goods_no number(3) primary key,
+	goods_name varchar2(20)
+);
+
+create sequence goods_no_seq
+start with 1
+increment by 1
+nocache;
+
+-- 시퀀스를 통해 데이터 추가
+insert into goods values (goods_no_seq.nextval, '라이언');
+insert into goods values (goods_no_seq.nextval, '춘식이');
+
+--시퀀스 꿀팁
+시퀀스명.nextval -- 다음 시퀀스
+시퀀스명.currval -- 현재 시퀀스
+
+----- VIEW -----
+view : 원하는 정보들을 모아서 조회할 목적으로 만드는 가상의 테이블
+create or replace view emp_view as 
+select employee_id, hire_date, job_id, department_id
+from employees;
+
+-- 생성한 view를 조회
+select * from emp_view;
+
+--이미 생성된 view의 column 이름을 수정
+create or replace view emp_view(empno, hdate, job, deptno) as
+select employee_id, hire_date, job_id, department_id;
+
+--직종이 ST_CLERK인 사원들의 정보만 가져오는 view
+create or replace view emp_view1 as
+select employee_id, first_name, job_id, department_id
+from employees
+where job_id = 'ST_CLERK';
+
+--사원의 이름과 급여, 급여+1000을 출력하는 view
+create or replace view emp_view as 
+select first_name, salary, salary+1000 salary2
+from employees;
+
+--score테이블 생성
+create table score (
+	id number(3) primary key,
+	name varchar2(20) not null,
+	kor number(3) default 0 check(kor <= 100),
+	eng number(3) default 0 check(eng <= 100),
+	math number(3) default 0 check(math <= 100)
+);
+
+--score 테이블의 시퀀스 생성
+create sequence seq_id;
+
+-- 데이터 값 넣기
+insert into score values(seq_id.nextval, '홍길동', 100, 70, 90);
+insert into score values(seq_id.nextval, '박길자', 80, 90, 75);
+
+--문) score_view라는 이름으로 일련번호, 이름, 국어, 영어, 수학, 총합, 평균을 조회하는 view를 만드세요
+
+create or replace view score_view as
+select id, name, kor, eng, math, (kor+eng+math) total, (kor+eng+math)/3 avg
+from score;
+
+--문) 사원테이블, 직업(jobs)테이블, 부서(departments)테이블을 조회하여 사번, 풀네임, 직종, 직종의 풀네임(job_title), 급여, 부서명을 조회하는 employeeDetails라는 뷰를 생성하고 모든 내용을 직종 오름차순으로 조회
+create or replace view employeeDetails as 
+select employee_id, (first_name || ' ' || last_name) full_name, e.job_id, job_title,
+salary, department_name
+from employees e, jobs j, departments d
+where e.job_id = j.job_id and e.department_id = d.department_id
+order by e.job_id;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

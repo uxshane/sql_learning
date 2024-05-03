@@ -1,0 +1,146 @@
+----- group by절 -----
+group by : 특정 컬럼이나 값을 기준으로 해당 레코드를 묶어서 관리할 때 사용
+** group by는 from절 아래쪽에 위치
+** group by는 where절 아래쪽에 위치
+select first_name, count(*)
+from employees
+group by first_name;
+
+--부서번호, 직종을 그룹화하여 각 그룹별 평균 급여를 계산
+select department_id, job_id, avg(salary)
+from employees
+group by department_id, job_id;
+
+--문) 각 직종별 인원수를 출력
+select job_id, count(job_id)
+from employees
+group by job_id;
+
+--문) 매니저별로 담당하는 직원의 수를 조회
+select manager_id, count(manager_id)
+from employees
+group by manager_id;
+
+--문)
+직종별 급여의 합을 출력하시오
+select job_id, sum(salary)
+from employees
+group by job_id;
+
+--문)
+각 부서별 급여의 평균과 총합을 출력
+select department_id, count(*), trunc(avg(salary)), sum(salary)
+from employees
+group by department_id;
+
+--문)
+직종별 급여의 합을 조회
+select job_id, count(*), sum(salary)
+from employees
+group by job_id;
+
+--문)
+부서번호, 직종별 급여의 평균을 출력하되 부서번호가 낮은순으로 정렬
+select department_id, job_id, count(*), avg(salary)
+from employees
+group by department_id, job_id
+order by department_id;
+
+--문)
+각 부서별 가장 높은 급여와 가장 낮은 급여를 출력
+select department_id, max(salary), min(salary)
+from employees
+group by department_id;
+
+--문)
+부서별 사원수, 급여의 합, 급여의 평균을 급여의 합이 높은 순으로 정렬
+select department_id, count(*), sum(salary), trunc(avg(salary)) avg
+from employees
+group by department_id
+order by avg desc;
+
+--부서별, 직종별 인원수를 출력
+select department_id, job_id, count(*)
+from employees
+group by department_id, job_id
+order by department_id, job_id desc
+
+--문)
+부서별, 직종별 급여의 합, 평균급여를 출력하되
+부서번호 낮은순, 급여합계 큰 순으로 정렬
+select department_id, job_id, sum(salary) sum, avg(salary)
+from employees
+group by department_id, job_id
+order by department_id, sum desc;
+
+-- having 절 --
+having : group by 다음에 나오는 조건문으로, group by의 결과에 조건을 주어 제한 할 때 사용.
+**그룹함수에 대한 조건식은 반드시 having으로 비교해야한다 
+where 절에는 그룹함수를 사용할 수 없다
+
+--직종별 급여의 최대값을 출력하되, 최대값이 5000초과인 경우만 출력
+select job_id, max(salary)
+from employees
+group by job_id
+having max(salary) > 5000;
+
+--문)
+부서별 인원수를 출력하되, 10명 이상인 부서만 출력
+select department_id, count(*)
+from employees
+group by department_id
+having count(*) >= 10;
+
+--문)
+각 부서별 부서번호, 급여의 합, 급여의 평균, 인원수를 출력
+단, 급여의 합이 30000이상인 경우만 출력해야 하며 급여의 평균은 
+소수점 2자리에서 반올림
+select department_id, sum(salary), round(avg(salary),2), count(*)
+from employees
+group by department_id
+having sum(salary) >= 30000;
+
+--문)
+부서별 급여의 최대값, 최소값, 인원수를 출력하되
+급여의 최대값이 8000이상이며 부서번호가 작은순으로 정렬
+select department_id, max(salary), min(salary), count(*)
+from employees
+group by department_id
+having max(salary) >= 8000
+order by department_id;
+
+--문)
+각 부서별 평균급여를 조회
+단, 평균급여가 10000미만인 경우만 조회해야 하며
+부서번호가 50 이하인 경우만 조회해야 한다
+select department_id, avg(salary)
+from employees
+where department_id <= 50
+group by department_id
+having avg(department_id) < 10000;
+
+--문)
+각 부서별, 직종별, 인원수를 출력하되
+직종이 'MAN'으로 끝나는 직종만 조회하시오
+select department_id, job_id, count(*)
+from employees
+where job_id like '%MAN'
+group by department_id, job_id;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

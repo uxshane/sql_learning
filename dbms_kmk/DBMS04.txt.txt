@@ -1,0 +1,226 @@
+--날짜함수--
+select sysdate from dual;
+
+1) months_between : 특정 날짜로부터 경과한 개월수
+-- select sysdate, 
+	months_between(sysdate, '01/01/2024') from dual;
+
+--문) 모든 사원들의 이름, 입사일, 입사개월수를 출력
+select first_name, hire_date, trunc(months_between(sysdate, hire_date), 2) months
+from employees
+order by months
+
+--문) 입사기간이 200개월 이상인 사원들의 이름, 입사일, 입사기간을 조회
+
+2) add_months : 특정 날짜로부터 n개월 후의 날짜를 계산
+select sysdate, add_months(sysdate, 3) from dual;
+
+--문) 모든 사원들의 입사일로부터 6개월 후의 날짜
+select first_name, hire_date, add_months(hire_date, 6) mon
+from employees
+
+--문)사번이 120번인 사원이 입사후 3년 6개월뒤에 퇴사를 했다.
+이 사원의 사번, 이름, 입사일, 퇴사일을 출력
+
+3)next_day : 특정 날짜를 기준으로 가장 빨리돌아오는 요일을 반환
+--일:1, 월:2, ... 토:7
+select sysdate, next_day(sysdate, 7)
+from dual;
+
+4)last_day : 해당 월의 마지막날
+select last_day(sysdate) from dual;
+
+--to_char() : 포맷에 맞게 날짜나 시간을 문자열로 변경하는 함수
+-- 날짜형식모델
+1) yyyy 또는 yy : 년도
+2) MM : 두자리의 월
+3) DD : 일
+4) DAY : 요일
+5) SCC 또는 CC : 세기
+
+--시간형식모델
+1) HH 또는 H12 또는 H24 : 시간표시
+2) MI : 분
+3) SS : 초
+4) AM/PM: 정오 지시자
+select to_char(sysdate, 'yyyy/mm/dd') from dual;
+select to_char(sysdate, 'YY-MM-DD : DAY') from dual;
+select to_char(sysdate, 'HH:MI:SS') from dual;
+
+--문) 사원의 이름, 입사일을 출력하되
+입사일은 '24-05-03 수요일'의 형태로 출력 되도록 하시오
+
+--to_number() : 숫자형태의 문자 -> 숫자
+select '12345', to_number('12345') from dual;
+
+--to_date() : 날짜형태의 문자 -> 실제 날짜구조
+--데이터가 날짜형식이 아니라면 오류
+select to_char(to_date('19990304'), 'yyyy/mm/dd') from dual;
+
+--기타함수
+--nvl() : null값을 다른데이터로 변경
+select first_name, NVL(manager_id, 0) 
+from employees;
+
+--사원테이블에서 이름, 월급, 보너스
+select first_name, salary, NVL(salary * commission_pct) bonus
+from employees
+
+-----decode()-----
+-- switch문의 역할을 수행하는 decode()함수
+select department_id, 
+	decode(department_id, 20, '마케팅', 
+			     60, '전산실',
+			     90, '경영부',
+			     10, '기타부서')
+from employees
+order by department_id;
+
+--매니저를 가지고 있지 않은 사원은 상사번호를 0으로 설정
+select manager_id,
+	decode(manager_id, null, 0,
+			  manager_id)
+from employees;
+
+--문)
+이름과 직종을 출력하되 직종이 IT_PROG인 사원들은 '개발자'
+select first_name, decode(job_id, 'IT_PROG', '개발자', 'SA_MAN', '영업담당자', job_id, '비개발자')
+from employees
+
+--case() : else if문과 같은 역할의 함수
+select first_name, department_id,
+	case
+	     when department_id = 20 then '마케팅'
+	     when department_id = 60 then '전산실'
+	     when department_id = 90 then '경영부'
+	else '기타부서'
+	end 'etc'
+from employees;
+
+--문)
+이름과 직종을 출력하되 직종이 IT_PROG인 사원들은 '개발자'
+select first_name, job_id,
+case
+when job_id = 'IT_PROG' then '개발자'
+when job_id = 'SA_MAN' then '영업담당자'
+else '비개발자'
+end job_name
+from employees
+
+--문)
+회사에서 입사일에 따라 퇴직금을 차등 지급하려고 한다
+이름, 입사일, 급여, 퇴직금(serve) 순으로 출력
+** 04년도 이전에 입사한 사원 : salary * 100
+** 04~06년도에 입사한 사원 : salary * 50
+** 07년 이후에 입사한 사원 : salary * 20
+select first_name, hire_date, salary,
+case
+when hire_date < '01/01/2004' then salary * 100
+when hire_date > '01/01/2004' and hire_date < '12/31/2006' then salary * 50
+when hire_date > '01/01/2007' then salary * 20
+end serve
+from employees
+
+--rank() over() : 순위를 매기는 함수
+select department_id, employee_id, first_name, salary,
+         rank() over(order by salary desc) salary_rank
+from employees
+
+----- join -----
+join : 테이블과 테이블을 연결하여 특정한 데이터를 얻고자 할 때
+
+--이름, 성, 부서번호, 부서이름을 출력
+1)select emp.first_name, emp.last_name, emp.department_id, dep.department_name
+from employees emp, departments dep
+where emp.department_id = dep.department_id;
+
+2)select emp.first_name, emp.last_name, emp.department_id, dep.department_name
+from employees emp
+inner join departments dep on
+emp.department_id = dep.department_id;
+
+--문) employees, departments 테이블로부터 이름, 부서번호, 부서이름을 출력
+select first_name, emp.department_id, department_name
+from employees emp
+inner join departments dep on
+emp.department_id = dep.department_id;
+
+--문)
+departments, locations 
+부서이름, 도시 를 출력
+select department_id, city
+from departments dep
+inner join locations loc on 
+dep.location_id = loc.location_id
+
+--문)
+locations와 countries테이블을 조회하여 city, country_name
+select city, country_name
+from locations loc
+inner join countries cou on 
+loc.country_id = cou.country_id;
+
+--문) employees, jobs 테이블
+이름, 이메일, 직종, job_title
+select first_name, email, emp.job_id, job_title
+from employees emp
+join jobs j on
+emp.job_id = j.job_id;
+
+--문)
+이름, 부서이름, 도시를 동시에 조회
+select emp.first_name, dep.department_name, loc.city
+from employees emp
+join departments dep on
+emp.department_id = dep.department_id
+join locations loc on
+loc.location_id = dep.location_id;
+
+--문)
+나라(countries), 지역(region)로부터
+country_name, region_name을 출력
+select cou.country_name, reg.region_name
+from countries cou, regions reg
+where cou.region_id = reg.region_id;
+
+--문)
+도시명, 도시가 속해있는 국가명, 국가가 위치한 대륙명을 조회
+select city, country_name, region_name
+from locations l, countries c, regions r
+where l.country_id = c.country_id AND c.region_id = r.region_id;
+
+--문)
+사원명, 부서번호, 도시명을 출력
+select first_name, emp.department_id, city
+from employees emp, departments dep, locations loc
+where emp.department_id = dep.department_id AND dep.location_id = loc.location_id;
+
+--문)
+이름, 성, 이메일, 부서번호, 부서이름, 지역번호(location_id), 도시를 출력하되, 도시가 Seattle인 경우만 출력
+1) select first_name, last_name, email, emp.department_id, department_name, dep.location_id, city
+from employees emp, departments dep, locations loc
+where emp.department_id = dep.department_id and dep.location_id = loc.location_id and city = 'Seattle';
+
+2) select first_name, last_name, email, emp.department_id, department_name, dep.location_id, city
+from employees emp 
+join departments dep on
+emp.department_id = dep.department_id
+join locations loc on
+dep.location_id = loc.location_id
+where city = 'Seattle';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

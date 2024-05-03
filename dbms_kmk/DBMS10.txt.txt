@@ -1,0 +1,104 @@
+----- 종합문제 -----
+-- 1) 부서번호가 10번인 사람들의 부서번호, 사번, 이름, 급여를 출력
+select department_id, employee_id, first_name, salary
+from employees
+where department_id = 10;
+
+-- 2) 사번이 126번인 사원의 이름, 입사일, 부서번호, 부서이름을 출력
+select first_name, hire_date, e.department_id, department_name
+from employees e, departments d
+where e.department_id = d.department_id and employee_id = 126;
+
+-- 3) 이름에 e가 포함되어 있는 모든 사원들의 이름, 사번, 급여를 출력
+select first_name, employee_id, salary
+from employees
+where first_name like '%e%';
+
+-- 4) 이름이 마이클인 사원이 근무하는 부서 이름을 알아내어 이름, 사번, 부서명으로 출력
+select first_name, employee_id, department_name
+from employees e, departments d
+where e.department_id = d.department_id and first_name = 'Michael';
+
+-- 5) 30번 부서의 평균 급여보다 많이받는 직원들 중에서 가장 많은 급여를 받는 직원의
+-- 이름과 급여를 조회
+select first_name, salary, department_id
+from employees
+where department_id = 30 and salary > (select avg(salary) from employees where department_id = 30);
+
+--6) 매니저별 부하직원의 수를 많은 것부터 정렬하여 출력
+select manager_id, count(*)
+from employees
+group by manager_id
+order by count(*) desc;
+
+select e1.first_name, count(e1.employee_id)
+from employees e1 join employees e2
+on e1.employee_id = e2.manager_id
+group by e1.first_name
+order by count(e1.employee_id) desc;
+
+--7) 이름이 Lex인 사원이 속해있는 부서의 모든 사람들의 사번, 이름, 입사일, 급여를 출력
+select employee_id, first_name, hire_date, salary
+from employees
+where department_id = (select department_id from employees where first_name = 'Lex');
+
+--8) 모든 사원의 이름, 입사일을 출력하되 경력이 많은 순으로 조회하시오
+select first_name, hire_date
+from employees
+order by hire_date;
+
+--9) 회사전체의 급여평균보다 많이받는 사원들의 사번, 이름, 부서명, 입사일, 급여를
+-- 급여 오름차순으로 출력
+select employee_id, first_name, department_name, hire_date, salary
+from employees e, departments d
+where e.department_id = d.department_id and salary > 
+(select avg(salary) from employees);
+
+--10) Neena 또는 Bruce와 급여와 같은 사원의 사번, 이름, 급여를 출력
+select employee_id, first_name, salary
+from employees
+where salary = (select salary from employees where first_name = 'Neena')
+or 
+salary = (select salary from employees where first_name = 'Bruce');
+
+--11) 각 도시(city)에 있는 모든 부서 직원들의 평균 급여를 조회하고자 한다.
+-- 평균 급여가 가장 낮은 도시부터 city와, 평균급여, 해당도시의 직원수를 출력.
+-- 단, 도시에 근무하는 직원이 10명 이상인곳은 제외하시오
+select city, avg(salary), count(*)
+from employees e join departments d on
+e.department_id = d.department_id
+join locations l on
+d.location_id = l.location_id 
+group by city
+having count(*) < 10
+order by avg(salary);
+
+--12) 직종별 급여의 총 합을 구하고 싶다
+-- 급여의 총 합이 가장 높은 직종부터 직종이름(job_title), 급여총합순으로 조회하시오.
+-- 단, 급여의 총합이 30000보다 큰 직종만 출력
+select job_title, sum(salary)
+from employees e join jobs j on e.job_id = j.job_id
+group by job_title
+having sum(salary) > 30000
+order by sum(salary) desc;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

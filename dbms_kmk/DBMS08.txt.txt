@@ -1,0 +1,194 @@
+--테이블 생성
+create table [테이블명](컬럼명 자료형);
+
+-- 기본키(primary key) : 고유한 식별자로써 속성 혹은 값에 대한 중복을 방지하는 키
+--후보키(candidate key) : name, email 등 키본키가 될 자격이 있는 컬럼들
+--외래키(foreign key) : 한 테이블의 컬럼이 다른 테이블의 행을 식별할 수 있도록 하는 키
+create table person(
+	id number(3) primary key,
+	name varchar2(30) not null,
+	email varchar2(50) unique
+);
+
+--새 계정 생성
+create user 유저이름 
+
+--계정 잠금 해제
+alter user [유저이름] identified by [비번] account unlock;
+
+--계정 삭제
+drop user test cascade;
+
+--person 테이블 조회
+select * from person;
+
+--컬럼추가
+alter table person add birth date;
+
+--컬럼명 수정
+alter table person rename column birth to birthday;
+
+--컬럼 속성 수정
+alter table person modify name varchar2(50) null;
+
+--컬럼 삭제
+alter table person drop column birthday;
+
+--테이블 삭제
+drop table person;
+
+--문)
+id, pwd, name, email, phone을 저장하는 member_t 테이블을 생성하시오.
+단,
+1) id = primary key
+2) 비번, 이름 = not null
+3)email = unique
+
+--문)
+member_t테이블에 회원가입 날짜를 의미하는 reg_date컬럼을 추가
+alter table member_t add reg_date date;
+
+--문)
+이메일 컬럼의 크기를 100으로 수정하시오
+alter table member_t modify email varchar2(100);
+
+--문)
+전화번호 컬럼을 삭제
+alter table member_t drop column phone;
+
+--문)
+member_t 테이블 삭제
+drop table member_t;
+
+----- INSERT -----
+create table teacher(
+	id number(3) primary key,
+	nickname varchar2(20) not null unique,
+	name varchar2(20) not null,
+	gender varchar2(10) not null);
+
+--자원 추가
+insert into 테이블명 (컬럼명1, 컬럼명2...)
+values(값1, 값2...);
+
+**insert, delete, update 뒤에는 무조건 commit!!!!
+
+insert into teacher (id, nickname, name, gender)
+values (1, 'hgd', 'hong_gd', 'male');
+
+insert into teacher (id, nickname, name, gender)
+values (2, 'hgd2', 'hong gil dong', 'female');
+
+insert into teacher (id, nickname, name, gender)
+values (3, 'hgd2', 'hong gil dong', 'female');
+
+alter table teacher modify gender varchar(10) null;
+
+--학생테이블
+create table student(
+	hakbun number(10) primary key,
+	name varchar2(20) not null,
+	major varchar2(20) not null,
+	year number(2),
+	age number(3),
+	address varchar2(200));
+	
+insert into student values(18, 'minsun', 'biochem', 3, 26, 'seoul');
+
+
+create table year_nick(
+	year number(3) primary key,
+	ynick varchar2(10));
+
+insert into year_nick values(1, '새싹반');
+insert into year_nick values(2, '줄기반');
+insert into year_nick values(3, '열매반');
+insert into year_nick values(4, '꽃잎반');
+
+--외래키 추가
+alter table student add constraint year_fk foreign key(name)
+references YEAR_NICK enable;
+
+----- delete -----
+테이블의 특정 행을 삭제하기위한 키워드
+
+--테이블 복사
+create table dept
+as select * from departments;
+
+-- 모든 내용 삭제
+delete from dept;
+
+--부서번호가 10번인 경우만 삭제
+delete from dept 
+where department_id = 10;
+
+--문)
+부서이름이 s로 시작되는 부서들을 모두 삭제
+delete from dept where department_name like 'S%';
+
+--문)
+부서이름의 길이가 15글자 이상인 부서들을 삭제
+delete from dept where length(department_name) > 15;
+
+----- update -----
+특정 컬럼의 값을 수정하고자 할 때
+
+--employees테이블 복사
+create table empl
+as select * from employees;
+
+--모든 사원의 급여를 10000으로 수정
+update empl set salary = 10000;
+
+--모든 사원의 급여를 9000으로 수정 및 매니저번호를 100으로 수정
+update empl set salary = 9000, manager_id = 100;
+
+--이름이 Steven인 사원의 급여를 5000으로 수정
+update empl set salary = 5000
+where first_name = 'Steven';
+
+--문) 전화번호가 12글자를 초과하는 직원들의 급여를
+1000원씩 깎으시오
+
+update empl set salary = (salary - 1000)
+where length(phone_number) > 12;
+
+--문)
+근속년수가 20년 이상인 사원들의 월급을 10000원 인상
+update empl set salary = salary + 1000
+where months_between(sysdate, hire_date)/12 > 20;
+
+----- rollback -----
+commit전에 변경된 정보를 적용하지 않고
+변경전으로 되돌리는 키워드
+
+update empl set salary = 0;
+
+-- commit이 완료된 상태에서 rollback하기
+delete from empl;
+
+insert into empl
+select * from empl as of timestamp(systimestamp - interval '10' minute);
+commit;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
